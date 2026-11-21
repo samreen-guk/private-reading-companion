@@ -3,6 +3,7 @@ import { localModel, cloudModel } from "./firebase.js";
 
 const LONG_TEXT = 2000; // characters; longer text goes to the cloud
 const $ = (id) => document.getElementById(id);
+const runs = [];
 
 // Decide where a request should run, and say why.
 function route(text, privateMode) {
@@ -11,6 +12,30 @@ function route(text, privateMode) {
   if (text.length > LONG_TEXT) return { local: false, why: "Long text: the cloud model handles it better." };
   return { local: true, why: "Short text: runs on your device, free and private." };
 }
+
+function renderNet() {
+  const el = $("net");
+  el.textContent = navigator.onLine ? "Online" : "Offline: on-device only";
+  el.className = "net" + (navigator.onLine ? "" : " off");
+}
+window.addEventListener("online", renderNet);
+window.addEventListener("offline", renderNet);
+renderNet();
+
+function renderLog() {
+  $("log").innerHTML = runs
+    .slice(-6).reverse()
+    .map((r) => `<li><span class="dot ${r.path}"></span>${r.path === "local" ? "On-device" : "Cloud"} · ${r.chars} chars · ${r.secs}s</li>`)
+    .join("");
+}
+
+$("copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("output").textContent);
+    $("copy").textContent = "Copied";
+    setTimeout(() => ($("copy").textContent = "Copy result"), 1500);
+  } catch { /* clipboard may be blocked; ignore */ }
+});
 
 $("go").addEventListener("click", async () => {
   const text = $("input").value.trim();
@@ -23,17 +48,25 @@ $("go").addEventListener("click", async () => {
   badge.textContent = (plan.local ? "On-device preferred. " : "Cloud. ") + plan.why;
 
   $("go").disabled = true;
+  $("copy").hidden = true;
   $("output").textContent = plan.local ? "Working on your device (the first run may download the model)..." : "Working in the cloud...";
+  const t0 = performance.now();
   try {
     const model = plan.local ? localModel : cloudModel;
     const result = await model.generateContent(`${$("task").value}:\n\n${text}`);
-    // Newer SDK versions may report which path actually ran; use it if present.
-    const src = result.response.inferenceSource;
-    if (src) badge.textContent += ` (ran: ${src})`;
+    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    // The SDK reports which path actually ran; fall back to our plan if it does not.
+    const src = String(result.response.inferenceSource || "").toLowerCase();
+    const path = src ? (src.includes("cloud") ? "cloud" : "local") : plan.local ? "local" : "cloud";
+    badge.className = "route " + path;
+    badge.textContent += ` Ran ${path === "local" ? "on-device" : "in the cloud"} in ${secs}s.`;
+    runs.push({ path, chars: text.length, secs });
+    renderLog();
     $("output").textContent = result.response.text();
+    $("copy").hidden = false;
   } catch (err) {
     console.error(err);
-    $("output").textContent = "Something went wrong: " + (err.message || err) + "\nCheck the README setup steps (Chrome flag, App Check, AI Logic enabled).";
+    $("output").textContent = "Something went wrong: " + (err.message || err);
   } finally {
     $("go").disabled = false;
   }

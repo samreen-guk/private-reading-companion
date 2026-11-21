@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Private Reading Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Private Reading Companion</h1>
+      <p>Short or private text stays on your device. Long text goes to the cloud. <span id="net" class="net"></span></p>
+    </header>
+
+    <section class="pane">
+      <label for="input">Your text</label>
+      <textarea id="input" rows="12" placeholder="Paste an article, email, or notes here."></textarea>
+      <div class="row">
+        <select id="task" aria-label="Task">
+          <option value="Summarize this text in 3-5 sentences">Summarize</option>
+          <option value="Explain this text in simple words a teenager would understand">Explain simply</option>
+          <option value="Rewrite this text to be clearer and more concise, keeping the meaning">Rewrite clearly</option>
+        </select>
+        <label class="toggle"><input type="checkbox" id="private" /> Keep on this device</label>
+        <button id="go">Run</button>
+      </div>
+    </section>
+
+    <section class="pane" aria-live="polite">
+      <div id="route" class="route" hidden></div>
+      <div id="output" class="output">The result appears here.</div>
+      <button id="copy" class="copy" hidden>Copy result</button>
+      <h2>Run log</h2>
+      <ul id="log" class="log"><li>No runs yet.</li></ul>
+    </section>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

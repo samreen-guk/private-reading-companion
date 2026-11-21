@@ -12,9 +12,8 @@
   <main>
     <header>
       <h1>Private Reading Companion</h1>
-      <p>Short or private text stays on your device. Long text goes to the cloud.</p>
+      <p>Short or private text stays on your device. Long text goes to the cloud. <span id="net" class="net"></span></p>   
     </header>
-
     <section class="pane">
       <label for="input">Your text</label>
       <textarea id="input" rows="12" placeholder="Paste an article, email, or notes here."></textarea>
@@ -32,6 +31,9 @@
     <section class="pane" aria-live="polite">
       <div id="route" class="route" hidden></div>
       <div id="output" class="output">The result appears here.</div>
+      <button id="copy" class="copy" hidden>Copy result</button>
+      <h2>un log</h2>
+      <ul id="log" class="log"><li>No runs yet.</li></ul>
     </section>
   </main>
   <script type="module" src="/src/main.js"></script>
